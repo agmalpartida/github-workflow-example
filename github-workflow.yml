@@ -1,31 +1,27 @@
-name: Build Docker Image
+name: Docker Image CI
 
-# Controls when the action will run. Triggers the workflow on push request
 on:
   push:
-    paths:
-    - '.github/workflows/**'
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
+
   build:
 
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
-
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
     # Login to Docker Hub
     - name: Docker login
       run: docker login -u ${{ secrets.DockerHubUser }} -p ${{ secrets.DockerHubToken }}
 
     # Build and publish Docker image
     - name: Docker build and push
-      run: docker build -f ${GITHUB_WORKSPACE}/Dockerfile -t ${{ secrets.DockerHubUser }}/${IMAGE_NAME}:latest . && docker push ${{ secrets.DockerHubUser }}/${IMAGE_NAME}:latest
+      run: docker build -f ${GITHUB_WORKSPACE}/Dockerfile -t ${{ secrets.DockerHubUser }}/${IMAGE_NAME}:$(date +%d%m) . && docker push ${{ secrets.DockerHubUser }}/${IMAGE_NAME}:$(date +%d%m)
       env:
         IMAGE_NAME: github-workflow-example
